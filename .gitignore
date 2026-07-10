@@ -1,0 +1,9 @@
+/target
+**/*.rs.bk
+*.swp
+*.swo
+.idea/
+.vscode/
+*.iml
+.env
+*.local

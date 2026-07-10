@@ -1,0 +1,32 @@
+[package]
+name = "webtrap"
+version = "0.1.0"
+description = "Webhook testing & debugging CLI — capture, inspect, replay, forward, and validate webhooks"
+authors = ["EdgarOrtegaRamirez"]
+edition = "2024"
+resolver = "2"
+license = "MIT"
+repository = "https://github.com/EdgarOrtegaRamirez/webtrap"
+
+[dependencies]
+clap = { version = "4.5", features = ["derive"] }
+axum = { version = "0.8", features = ["tokio"] }
+tokio = { version = "1.44", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-features = false }
+chrono = { version = "0.4", features = ["serde"] }
+tower-http = { version = "0.6", features = ["cors", "trace"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+uuid = { version = "1.16", features = ["v4", "serde"] }
+hmac = "0.12"
+sha2 = "0.10"
+hex = "0.4"
+indicatif = "0.17"
+mime = "0.3"
+colored = "3.0"
+subtle = "2.6"
+
+[dev-dependencies]
+tempfile = "3.18"
