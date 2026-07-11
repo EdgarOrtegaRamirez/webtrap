@@ -1,9 +1,9 @@
 /// Validate webhook signatures
 use crate::storage::WebhookStore;
 use crate::types::SignatureResult;
+use hex;
 use hmac::{Hmac, Mac};
 use sha2::Sha256;
-use hex;
 
 type HmacSha256 = Hmac<Sha256>;
 
@@ -44,17 +44,25 @@ pub async fn validate_signature(
     secret: &str,
     provider: Option<&str>,
 ) -> Result<SignatureResult, String> {
-    let webhook = store.get(id).await
+    let webhook = store
+        .get(id)
+        .await
         .ok_or_else(|| format!("Webhook with ID '{}' not found", id))?;
 
     let provider_name = provider.unwrap_or("github");
-    let provider = Provider::from_str(provider_name)
-        .ok_or_else(|| format!("Unknown provider: {}. Supported: github, gitlab, stripe, generic", provider_name))?;
+    let provider = Provider::from_str(provider_name).ok_or_else(|| {
+        format!(
+            "Unknown provider: {}. Supported: github, gitlab, stripe, generic",
+            provider_name
+        )
+    })?;
 
     let headers = &webhook.headers;
 
     // Find the signature header
-    let sig_header = provider.signature_headers().iter()
+    let sig_header = provider
+        .signature_headers()
+        .iter()
         .find(|h| headers.contains_key(**h))
         .copied()
         .ok_or_else(|| {
@@ -69,7 +77,7 @@ pub async fn validate_signature(
     let computed = match provider {
         Provider::GitHub => {
             // GitHub sends sha256=hexdigest
-            let body = if sig_value.starts_with("sha256=") {
+            if sig_value.starts_with("sha256=") {
                 let mut mac = HmacSha256::new_from_slice(secret.as_bytes())
                     .map_err(|e| format!("HMAC initialization error: {}", e))?;
                 mac.update(raw_body.as_bytes());
@@ -80,8 +88,7 @@ pub async fn validate_signature(
                 return Err("SHA1 signatures not supported. Use SHA256.".to_string());
             } else {
                 return Err(format!("Unknown signature format: {}", sig_value));
-            };
-            body
+            }
         }
         Provider::GitLab => {
             // GitLab uses a shared token in the header

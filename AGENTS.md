@@ -17,6 +17,7 @@ webtrap/
 │   ├── server.rs      # Axum HTTP server for webhook capture
 │   ├── inspect.rs     # Display/formatting logic
 │   ├── replay.rs      # Webhook replay engine
+│   ├── stats.rs       # Statistics computation and display
 │   └── validate.rs    # Signature validation (GitHub, GitLab, Stripe)
 ├── tests/
 │   └── integration.rs # Integration tests

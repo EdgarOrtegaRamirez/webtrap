@@ -1,11 +1,17 @@
+use crate::types::Webhook;
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use crate::types::Webhook;
 
 /// Thread-safe webhook storage
 #[derive(Debug, Clone)]
 pub struct WebhookStore {
     inner: Arc<RwLock<Vec<Webhook>>>,
+}
+
+impl Default for WebhookStore {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl WebhookStore {

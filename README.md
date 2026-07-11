@@ -13,6 +13,8 @@
 - **🔄 Replay** — Replay captured webhooks to any target URL
 - **✅ Validate** — Verify webhook signatures (GitHub, GitLab, Stripe, generic HMAC)
 - **📤 Export** — Export webhooks to JSON files
+- **📥 Import** — Import webhooks from a JSON file (replace or merge mode)
+- **📊 Stats** — Show statistics about captured webhooks (methods, paths, timing, body sizes, tags)
 - **🏷️ Tag** — Organize webhooks with custom tags
 - **🔀 Forward** — Automatically forward incoming webhooks to another endpoint
 
@@ -168,6 +170,41 @@ Tag a webhook with custom tags.
 |------|-------|-------------|
 | `id` | — | Webhook ID |
 | `--tags` | `-t` | Comma-separated tags |
+
+### `webtrap stats`
+
+Show statistics about captured webhooks.
+
+| Flag | Short | Default | Description |
+|------|-------|---------|-------------|
+| `--format` | `-f` | `text` | Output format: `text`, `json` |
+
+Displays a visual dashboard with:
+- Total webhook count
+- Time range (earliest, latest, span)
+- Body size statistics (min, max, avg, total)
+- Method breakdown with ASCII bar charts
+- Content type distribution
+- Top 10 most frequent paths
+- Top 5 source addresses
+- Tag distribution
+
+### `webtrap import`
+
+Import webhooks from a JSON file.
+
+| Flag | Short | Default | Description |
+|------|-------|---------|-------------|
+| `--input` | `-i` | — | Input file path (JSON array of webhooks) |
+| `--merge` | — | `false` | Merge with existing webhooks (default: replace all) |
+
+```bash
+# Replace all existing webhooks with imported ones
+webtrap import --input exported_webhooks.json
+
+# Merge imported webhooks with existing ones
+webtrap import --input exported_webhooks.json --merge
+```
 
 ## Supported Signature Providers
 

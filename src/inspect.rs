@@ -42,7 +42,11 @@ pub async fn display_webhooks(
                     format_body_preview(&wh.body, 60),
                 );
             }
-            println!("\nTotal: {} webhooks (filtered from {})", filtered.len(), webhooks.len());
+            println!(
+                "\nTotal: {} webhooks (filtered from {})",
+                filtered.len(),
+                webhooks.len()
+            );
         }
     }
 
@@ -55,7 +59,9 @@ pub async fn show_webhook_detail(
     id: &str,
     format: OutputFormat,
 ) -> Result<(), String> {
-    let webhook = store.get(id).await
+    let webhook = store
+        .get(id)
+        .await
         .ok_or_else(|| format!("Webhook with ID '{}' not found", id))?;
 
     match format {
@@ -66,11 +72,11 @@ pub async fn show_webhook_detail(
         }
         _ => {
             println!("{}", webhook.summary());
-            if let Some(ref raw) = webhook.raw_body {
-                if raw.len() > webhook.body.to_string().len() + 50 {
-                    println!("\nRaw body ({} bytes):", raw.len());
-                    println!("{}", raw);
-                }
+            if let Some(ref raw) = webhook.raw_body
+                && raw.len() > webhook.body.to_string().len() + 50
+            {
+                println!("\nRaw body ({} bytes):", raw.len());
+                println!("{}", raw);
             }
             println!("\nHeaders ({}):", webhook.headers.len());
             let mut sorted_headers: Vec<_> = webhook.headers.iter().collect();
@@ -91,30 +97,30 @@ fn apply_filter(webhooks: &[Webhook], filter: &WebhookFilter) -> Vec<Webhook> {
     let mut filtered: Vec<Webhook> = webhooks
         .iter()
         .filter(|w| {
-            if let Some(ref method) = filter.method {
-                if !w.method.eq_ignore_ascii_case(method) {
-                    return false;
-                }
+            if let Some(ref method) = filter.method
+                && !w.method.eq_ignore_ascii_case(method)
+            {
+                return false;
             }
-            if let Some(ref path) = filter.path {
-                if !w.path.contains(path) {
-                    return false;
-                }
+            if let Some(ref path) = filter.path
+                && !w.path.contains(path)
+            {
+                return false;
             }
-            if let Some(ref tag) = filter.tag {
-                if !w.tags.iter().any(|t| t.contains(tag)) {
-                    return false;
-                }
+            if let Some(ref tag) = filter.tag
+                && !w.tags.iter().any(|t| t.contains(tag))
+            {
+                return false;
             }
-            if let Some(ref source) = filter.source {
-                if !w.source_addr.contains(source) {
-                    return false;
-                }
+            if let Some(ref source) = filter.source
+                && !w.source_addr.contains(source)
+            {
+                return false;
             }
-            if let Some(since) = filter.since {
-                if w.received_at < since {
-                    return false;
-                }
+            if let Some(since) = filter.since
+                && w.received_at < since
+            {
+                return false;
             }
             true
         })
@@ -122,7 +128,7 @@ fn apply_filter(webhooks: &[Webhook], filter: &WebhookFilter) -> Vec<Webhook> {
         .collect();
 
     // Sort by most recent first
-    filtered.sort_by(|a, b| b.received_at.cmp(&a.received_at));
+    filtered.sort_by_key(|w| std::cmp::Reverse(w.received_at));
 
     // Apply limit
     if let Some(limit) = filter.limit {

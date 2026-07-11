@@ -6,17 +6,25 @@ pub async fn replay_webhook(
     id: &str,
     target_url: Option<&str>,
 ) -> Result<(), String> {
-    let webhook = store.get(id).await
+    let webhook = store
+        .get(id)
+        .await
         .ok_or_else(|| format!("Webhook with ID '{}' not found", id))?;
 
     let url: String = if let Some(t) = target_url {
         t.to_string()
     } else {
         // If the webhook has a host header, use it
-        webhook.headers.get("host")
+        webhook
+            .headers
+            .get("host")
             .map(|h| format!("http://{}{}", h, webhook.path))
             .unwrap_or_else(|| {
-                let prefix = if webhook.path.starts_with('/') { "" } else { "/" };
+                let prefix = if webhook.path.starts_with('/') {
+                    ""
+                } else {
+                    "/"
+                };
                 format!("http://localhost{}{}", prefix, webhook.path)
             })
     };
@@ -37,18 +45,18 @@ pub async fn replay_webhook(
         if lower == "host" || lower == "content-length" || lower == "transfer-encoding" {
             continue;
         }
-        if let Ok(name) = reqwest::header::HeaderName::from_bytes(key.as_bytes()) {
-            if let Ok(val) = reqwest::header::HeaderValue::from_str(value) {
-                req = req.header(name, val);
-            }
+        if let Ok(name) = reqwest::header::HeaderName::from_bytes(key.as_bytes())
+            && let Ok(val) = reqwest::header::HeaderValue::from_str(value)
+        {
+            req = req.header(name, val);
         }
     }
 
     // Add body if present
-    if let Some(ref raw_body) = webhook.raw_body {
-        if !raw_body.is_empty() {
-            req = req.body(raw_body.clone());
-        }
+    if let Some(ref raw_body) = webhook.raw_body
+        && !raw_body.is_empty()
+    {
+        req = req.body(raw_body.clone());
     }
 
     println!("Replaying webhook {} to {} {} ...", webhook.id, method, url);
@@ -62,13 +70,15 @@ pub async fn replay_webhook(
             } else {
                 body
             };
-            println!("Response: {} ({})", status, if status < 400 { "OK" } else { "Error" });
+            println!(
+                "Response: {} ({})",
+                status,
+                if status < 400 { "OK" } else { "Error" }
+            );
             println!("Body: {}", body_preview);
             Ok(())
         }
-        Err(e) => {
-            Err(format!("Failed to replay webhook: {}", e))
-        }
+        Err(e) => Err(format!("Failed to replay webhook: {}", e)),
     }
 }
 

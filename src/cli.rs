@@ -132,4 +132,22 @@ pub enum Commands {
         #[arg(short, long)]
         tags: String,
     },
+
+    /// Show statistics about captured webhooks
+    Stats {
+        /// Output format
+        #[arg(short, long, value_enum, default_value = "text")]
+        format: super::types::OutputFormat,
+    },
+
+    /// Import webhooks from a JSON file
+    Import {
+        /// Input file path (JSON array of webhooks)
+        #[arg(short, long)]
+        input: std::path::PathBuf,
+
+        /// Merge with existing webhooks (default: replace)
+        #[arg(long)]
+        merge: bool,
+    },
 }

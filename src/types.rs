@@ -1,6 +1,6 @@
-use std::collections::HashMap;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use uuid::Uuid;
 
 /// A captured webhook request
@@ -20,6 +20,7 @@ pub struct Webhook {
 }
 
 impl Webhook {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         method: String,
         path: String,

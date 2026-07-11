@@ -1,13 +1,13 @@
-use std::collections::HashMap;
-use std::net::SocketAddr;
-use std::path::PathBuf;
 use axum::{
+    Router,
     extract::{ConnectInfo, Query, State},
     http::{HeaderMap, Method, StatusCode, Uri},
     response::IntoResponse,
     routing::any,
-    Router,
 };
+use std::collections::HashMap;
+use std::net::SocketAddr;
+use std::path::PathBuf;
 use tower_http::cors::CorsLayer;
 use tracing::{info, warn};
 
@@ -25,7 +25,10 @@ pub fn build_server(state: AppState) -> Router {
 /// Get the state file path from the app state
 fn state_file_path() -> PathBuf {
     let home = std::env::var("HOME").unwrap_or_else(|_| "/tmp".to_string());
-    let data_dir = std::path::PathBuf::from(home).join(".local").join("share").join("webtrap");
+    let data_dir = std::path::PathBuf::from(home)
+        .join(".local")
+        .join("share")
+        .join("webtrap");
     std::fs::create_dir_all(&data_dir).ok();
     data_dir.join("webtrap_state.json")
 }
@@ -65,7 +68,8 @@ async fn handle_webhook(
 
     // Parse body
     let raw_body = String::from_utf8_lossy(&body).to_string();
-    let body_json: serde_json::Value = serde_json::from_slice(&body).unwrap_or(serde_json::Value::String(raw_body.clone()));
+    let body_json: serde_json::Value =
+        serde_json::from_slice(&body).unwrap_or(serde_json::Value::String(raw_body.clone()));
 
     // Build query string
     let query_string = uri.query().unwrap_or("").to_string();
@@ -85,7 +89,10 @@ async fn handle_webhook(
     // Log the webhook
     info!(
         "Captured webhook: {} {} from {} ({} headers)",
-        webhook.method, webhook.path, webhook.source_addr, webhook.headers.len()
+        webhook.method,
+        webhook.path,
+        webhook.source_addr,
+        webhook.headers.len()
     );
 
     // Store the webhook
@@ -108,8 +115,12 @@ async fn handle_webhook(
         }
 
         let client = reqwest::Client::new();
-        let req_method = reqwest::Method::from_bytes(method.to_string().as_bytes()).unwrap_or(reqwest::Method::POST);
-        let req = client.request(req_method, &url).headers(forward_headers).body(body.clone());
+        let req_method = reqwest::Method::from_bytes(method.to_string().as_bytes())
+            .unwrap_or(reqwest::Method::POST);
+        let req = client
+            .request(req_method, &url)
+            .headers(forward_headers)
+            .body(body.clone());
         match req.send().await {
             Ok(resp) => {
                 let status = resp.status();
@@ -129,10 +140,10 @@ async fn handle_webhook(
     let mut resp = axum::response::Response::new(axum::body::Body::from(response_body));
     *resp.status_mut() = status_code;
     for (k, v) in response_headers {
-        if let Ok(name) = axum::http::HeaderName::from_bytes(k.as_bytes()) {
-            if let Ok(value) = axum::http::HeaderValue::from_str(&v) {
-                resp.headers_mut().insert(name, value);
-            }
+        if let Ok(name) = axum::http::HeaderName::from_bytes(k.as_bytes())
+            && let Ok(value) = axum::http::HeaderValue::from_str(&v)
+        {
+            resp.headers_mut().insert(name, value);
         }
     }
     resp
