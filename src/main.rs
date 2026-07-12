@@ -3,6 +3,7 @@ use std::net::SocketAddr;
 use tracing::{info, warn};
 
 use webtrap::cli::{self, Commands};
+use webtrap::diff;
 use webtrap::inspect;
 use webtrap::replay;
 use webtrap::server;
@@ -69,6 +70,7 @@ async fn main() {
         Commands::Tag { id, tags } => cmd_tag(id, &tags, &state_file).await,
         Commands::Stats { format } => cmd_stats(format, &state_file).await,
         Commands::Import { input, merge } => cmd_import(input, merge, &state_file).await,
+        Commands::Diff { id1, id2, format } => cmd_diff(id1, id2, format, &state_file).await,
     }
 }
 
@@ -377,4 +379,33 @@ async fn cmd_import(input: std::path::PathBuf, merge: bool, state_file: &std::pa
             import_count, total
         );
     }
+}
+
+// Diff command: compare two webhooks
+async fn cmd_diff(
+    id1: String,
+    id2: String,
+    format: types::OutputFormat,
+    state_file: &std::path::Path,
+) {
+    let store = load_webhooks(state_file).await;
+
+    let wh1 = match store.get(&id1).await {
+        Some(w) => w,
+        None => {
+            eprintln!("Error: Webhook with ID '{}' not found", id1);
+            std::process::exit(1);
+        }
+    };
+
+    let wh2 = match store.get(&id2).await {
+        Some(w) => w,
+        None => {
+            eprintln!("Error: Webhook with ID '{}' not found", id2);
+            std::process::exit(1);
+        }
+    };
+
+    let result = diff::diff_webhooks(&wh1, &wh2);
+    println!("{}", diff::display_diff(&result, format));
 }

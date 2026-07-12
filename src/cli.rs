@@ -150,4 +150,17 @@ pub enum Commands {
         #[arg(long)]
         merge: bool,
     },
+
+    /// Diff two webhooks
+    Diff {
+        /// First webhook ID
+        id1: String,
+
+        /// Second webhook ID
+        id2: String,
+
+        /// Output format
+        #[arg(short, long, value_enum, default_value = "text")]
+        format: super::types::OutputFormat,
+    },
 }

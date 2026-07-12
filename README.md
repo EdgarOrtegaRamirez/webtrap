@@ -17,6 +17,7 @@
 - **📊 Stats** — Show statistics about captured webhooks (methods, paths, timing, body sizes, tags)
 - **🏷️ Tag** — Organize webhooks with custom tags
 - **🔀 Forward** — Automatically forward incoming webhooks to another endpoint
+- **🔎 Diff** — Compare two webhooks and see structural differences in headers, body, and metadata
 
 ## Installation
 
@@ -204,6 +205,33 @@ webtrap import --input exported_webhooks.json
 
 # Merge imported webhooks with existing ones
 webtrap import --input exported_webhooks.json --merge
+```
+
+### `webtrap diff`
+
+Compare two webhooks and show differences.
+
+| Argument | Description |
+|----------|-------------|
+| `id1` | First webhook ID |
+| `id2` | Second webhook ID |
+
+| Flag | Short | Default | Description |
+|------|-------|---------|-------------|
+| `--format` | `-f` | `text` | Output format: `text`, `json` |
+
+Displays differences in:
+- **Metadata**: method, path, query, content type, source, timing
+- **Headers**: added, removed, changed
+- **Tags**: added, removed
+- **Body**: JSON path-based structural diff showing added/removed/changed fields with nested object and array support
+
+```bash
+# Text diff with colorized output
+webtrap diff <id1> <id2>
+
+# JSON diff for CI/CD pipelines
+webtrap diff <id1> <id2> --format json
 ```
 
 ## Supported Signature Providers

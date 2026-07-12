@@ -1,4 +1,5 @@
 pub mod cli;
+pub mod diff;
 pub mod inspect;
 pub mod replay;
 pub mod server;
